@@ -13,6 +13,30 @@ verzichtbar; Fokusgerät iMac17,1 wird erst nach Erfolg angefasst.
 - Payloads sind weiterhin Monterey-Ära ("12.5"-Quellen in `amd_legacy_gcn.py`)
   aus Universal-Binaries 1.9.6 — Tahoe-Validierung ist genau das Experiment.
 
+## Phase 0: Bootstrap & Fusion-Split (Maschine ist leer)
+
+Kontext: iMac15,1 offiziell bis Monterey; Fusion Drive (Blade-SSD ~107-121 GB
++ HDD) muss getrennt werden — Tahoe unterstuetzt Fusion Drives nicht mehr.
+
+1. Auf einem beliebigen Mac mit diesem Branch: OCLP starten, Sequoia-Installer
+   laden, USB-Stick (>= 32 GB) erstellen. In den Settings **Target Model:
+   iMac15,1** setzen und OpenCore auf die EFI des Sticks installieren.
+2. iMac mit Alt-Taste booten -> "EFI Boot" -> OpenCore-Picker -> Installer.
+3. Im Installer: Dienstprogramme -> **Terminal** (nicht Festplattendienst-
+   programm — das will den Fusion Drive "reparieren"):
+   - `diskutil list` (Blade-SSD meist disk0, HDD disk1)
+   - APFS-Fusion: `diskutil apfs deleteContainer <synth. Container>`
+   - CoreStorage:  `diskutil cs list` + `diskutil cs delete <LVG-UUID>`
+   - `diskutil eraseDisk APFS Macintosh GPT disk0` (SSD, Systemplatte)
+   - `diskutil eraseDisk APFS Daten GPT disk1` (HDD, Datenplatte)
+   - NIEMALS `diskutil resetFusion` (stellt den Fusion Drive wieder her!)
+4. Sequoia auf "Macintosh" installieren, OCLP-Post-Install: OpenCore auf
+   interne ESP, Root-Patches (Sequoia = erprobter Legacy-GCN-Pfad, dient als
+   Referenz, dass die Hardware sauber patcht). SSH sofort aktivieren.
+5. Tahoe-Testvolume: zweites APFS-Volume im selben SSD-Container anlegen
+   (teilt freien Platz). Bei Platznot (107 GB fuer zwei Systeme ist knapp):
+   externe USB-3-SSD statt HDD — die HDD ist als Systemplatte zu langsam.
+
 ## Vorbereitung (am Schreibtisch)
 
 1. Externe SSD oder eigene APFS-Partition am Testgerät, >= 80 GB.
